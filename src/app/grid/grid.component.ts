@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, ViewChild } from '@angular/core';
-import { AgGridAngular } from 'ag-grid-angular';
 import { CellClickedEvent, ColDef, GridReadyEvent } from 'ag-grid-community';
 import { Observable } from 'rxjs';
+import 'ag-grid-enterprise'
+import {AgGridAngular} from "ag-grid-angular";
 
 @Component({
   selector: 'app-grid-component',
@@ -12,7 +13,7 @@ import { Observable } from 'rxjs';
 export class GridComponent {
   // Each Column Definition results in one Column.
   columnDefs: ColDef[] = [
-    { field: 'make',rowGroup:true},
+    { field: 'make'},
     { field: 'model'},
     { field: 'price' }
   ];
