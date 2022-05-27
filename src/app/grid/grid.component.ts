@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, ViewChild } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import { CellClickedEvent, ColDef, GridReadyEvent } from 'ag-grid-community';
+import {CellClickedEvent, ColDef, GridApi, GridReadyEvent} from 'ag-grid-community';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
   styleUrls: ['./grid.component.css']
 })
 export class GridComponent {
+  private gridApi!: GridApi;
   // Each Column Definition results in one Column.
   columnDefs: ColDef[] = [
     { field: 'make'},
@@ -33,8 +34,14 @@ export class GridComponent {
 
   // Example load data from sever
   onGridReady(params: GridReadyEvent) {
-    this.rowData$ = this.http
-      .get<any[]>('https://www.ag-grid.com/example-assets/row-data.json');
+    this.gridApi = params.api;
+    this.rowData$ = this.http.get<any[]>('https://www.ag-grid.com/example-assets/row-data.json');
+  }
+
+  onFilterTextBoxChanged() {
+    this.gridApi.setQuickFilter(
+      (document.getElementById('filter-text-box') as HTMLInputElement).value
+    );
   }
 
   // Example of consuming Grid Event
