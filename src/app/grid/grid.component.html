@@ -1,26 +1,45 @@
 <!-- Button to clear selection -->
-<div class="example-header">
-  <input
-    type="text"
-    #filterTextBox
-    id="filter-text-box"
-    placeholder="Filter..."
-    (input)="onFilterTextBoxChanged()"
-  />
-  <button (click)="onBtnExport()">Download CSV export file</button>
-  <button (click)="updateItems()">UpdateItems</button>
-  <button (click)="onRemoveSelected()">RemoveSelected</button>
+<div class="example-header justify-between flex items-center">
+  <mat-form-field class="example-form-field">
+    <mat-label>Quick Filter</mat-label>
+    <input
+      matInput
+      type="text"
+      #filterTextBox
+      id="filter-text-box"
+      placeholder="Filter..."
+      (input)="onFilterTextBoxChanged()"
+    />
+
+  </mat-form-field>
+  <div class="button flex gap-3">
+    <button mat-raised-button color="primary" (click)="updateItems()">
+      <mat-icon>edit</mat-icon>
+      <span>Update Selected Rows</span>
+    </button>
+    <button mat-raised-button color="primary" (click)="onRemoveSelected()">
+      <mat-icon>delete_forever</mat-icon>
+      <span>Delete Selected Rows</span>
+    </button>
+      <button mat-raised-button color="primary" (click)="onBtnExport()">
+        <mat-icon>file_download</mat-icon>
+        <span>Download CSV export file</span>
+      </button>
+
+
+  </div>
 </div>
 
 <!-- AG Grid Angular Component -->
 <ag-grid-angular
-  style="width: 100%; height: 96%"
+  style="width: 100%; height: 90%"
   class="ag-theme-alpine"
   [columnDefs]="columnDefs"
   [defaultColDef]="defaultColDef"
-  [rowData]="rowData$ | async"
+  [rowData]="(tableData?.rowData$) | async"
   [rowSelection]="'multiple'"
   [animateRows]="true"
+  [context]="context"
   (gridReady)="onGridReady($event)"
   (cellClicked)="onCellClicked($event)"
   (selectionChanged)="onSelectionChanged($event)"
