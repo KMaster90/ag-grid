@@ -8,7 +8,7 @@ import {
   GridReadyEvent,
   ICellRendererParams,
   IDatasource,
-  IGetRowsParams
+  IGetRowsParams, SelectionChangedEvent
 } from 'ag-grid-community';
 import { Observable } from 'rxjs';
 
@@ -26,23 +26,7 @@ export class GridComponent {
   rowData$!: Observable<any[]>;
   // Each Column Definition results in one Column.
   columnDefs: ColDef[] = [
-    // this row shows the row index, doesn't use any data from the row
-    {
-      headerName: 'ID',
-      maxWidth: 100,
-      // it is important to have node.id here, so that when the id changes (which happens
-      // when the row is loaded) then the cell is refreshed.
-      valueGetter: 'node.id',
-      cellRenderer: (params: ICellRendererParams) => {
-        if (params.value !== undefined) {
-          return params.value;
-        } else {
-          return '<img src="https://www.ag-grid.com/example-assets/loading.gif">';
-        }
-      },
-
-    },
-    { field: 'athlete', minWidth: 150 },
+    { field: 'athlete', minWidth: 150, headerCheckboxSelection: true, headerCheckboxSelectionFilteredOnly: true,checkboxSelection:true},
     { field: 'age' },
     { field: 'country', minWidth: 150 },
     { field: 'year' },
@@ -85,5 +69,10 @@ export class GridComponent {
 
   clearSelection(): void {
     this.agGrid.api.deselectAll();
+  }
+
+  onSelectionChanged($event: SelectionChangedEvent) {
+    console.log(this.gridApi.getSelectedRows())
+
   }
 }
