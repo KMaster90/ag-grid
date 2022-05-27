@@ -9,3 +9,10 @@ html, body {
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
 }
+
+
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.mat-tab-body-wrapper{
+  flex-grow: 1;
+}

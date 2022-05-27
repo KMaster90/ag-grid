@@ -1,0 +1,7 @@
+.mat-tab-body-wrapper{
+  flex-grow: 1;
+}
+
+.mat-tab-group{
+  height: 100% !important;
+}

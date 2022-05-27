@@ -12,7 +12,7 @@ import { Observable } from 'rxjs';
 export class GridComponent {
   // Each Column Definition results in one Column.
   columnDefs: ColDef[] = [
-    { field: 'make',rowGroup:true},
+    { field: 'make'},
     { field: 'model'},
     { field: 'price' }
   ];
