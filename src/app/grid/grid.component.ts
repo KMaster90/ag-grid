@@ -8,7 +8,7 @@ import {
   GridReadyEvent,
   ICellRendererParams,
   IDatasource,
-  IGetRowsParams, SelectionChangedEvent
+  IGetRowsParams, RowNodeTransaction, SelectionChangedEvent
 } from 'ag-grid-community';
 import { Observable } from 'rxjs';
 
@@ -65,14 +65,53 @@ export class GridComponent {
     console.log('cellClicked', e);
   }
 
-  // Example using Grid's API
-
-  clearSelection(): void {
-    this.agGrid.api.deselectAll();
+  onBtnExport() {
+    this.gridApi.exportDataAsCsv({onlySelected:true});
   }
 
   onSelectionChanged($event: SelectionChangedEvent) {
     console.log(this.gridApi.getSelectedRows())
 
+  }
+
+  onRemoveSelected() {
+    const selectedData = this.gridApi.getSelectedRows();
+    const res = this.gridApi.applyTransaction({ remove: selectedData })!;
+    this.printResult(res);
+  }
+
+  updateItems() {
+    // update the first 2 items
+    const itemsToUpdate: any[] = [];
+    this.gridApi.forEachNodeAfterFilterAndSort(function (rowNode, index) {
+      // only do first 2
+      if (rowNode.isSelected() === false) {
+        return;
+      }
+      const data = rowNode.data;
+      data.age = Math.floor(Math.random() * 20000 + 20000);
+      itemsToUpdate.push(data);
+    });
+    const res = this.gridApi.applyTransaction({ update: itemsToUpdate })!;
+    this.printResult(res);
+  }
+
+  printResult(res: RowNodeTransaction) {
+    console.log('---------------------------------------');
+    if (res.add) {
+      res.add.forEach(function (rowNode) {
+        console.log('Added Row Node', rowNode);
+      });
+    }
+    if (res.remove) {
+      res.remove.forEach(function (rowNode) {
+        console.log('Removed Row Node', rowNode);
+      });
+    }
+    if (res.update) {
+      res.update.forEach(function (rowNode) {
+        console.log('Updated Row Node', rowNode);
+      });
+    }
   }
 }

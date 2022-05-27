@@ -7,7 +7,9 @@
     placeholder="Filter..."
     (input)="onFilterTextBoxChanged()"
   />
-  <button (click)="clearSelection()">Clear Selection</button>
+  <button (click)="onBtnExport()">Download CSV export file</button>
+  <button (click)="updateItems()">UpdateItems</button>
+  <button (click)="onRemoveSelected()">RemoveSelected</button>
 </div>
 
 <!-- AG Grid Angular Component -->
