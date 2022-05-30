@@ -1,11 +1,7 @@
 <!-- Button to clear selection -->
 <div class="example-header justify-between flex items-center">
-  <mat-form-field class="example-form-field">
-<!--      <mat-label>Toppings</mat-label>
-      <mat-select [formControl]="columns" multiple>
-        <mat-option *ngFor="let column of columns" [value]="column">{{column}}</mat-option>
-      </mat-select>
-    <mat-label>Quick Filter</mat-label>-->
+  <mat-form-field>
+    <mat-label>Quick Filter</mat-label>
     <input
       matInput
       type="text"
@@ -15,12 +11,19 @@
       (input)="onFilterTextBoxChanged()"
     />
   </mat-form-field>
+  <mat-form-field class="example-form-field">
+    <mat-label>Column Chooser</mat-label>
+    <mat-select [formControl]="columnsControl" multiple>
+      <mat-option *ngFor="let column of columnDefsInitial" [value]="column.field">{{column.field}}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
   <div class="button flex gap-3">
     <button mat-raised-button color="primary">
       <label class="flex align-middle">
-      <mat-icon class="self-center">file_upload</mat-icon>
-      <span>Import From File</span>
-      <input hidden type="file" (change)="onImportFile($event)" multiple="false"></label>
+        <mat-icon class="self-center">file_upload</mat-icon>
+        <span>Import From File</span>
+        <input hidden type="file" (change)="onImportFile($event)" multiple="false"></label>
     </button>
     <button mat-raised-button color="primary" (click)="updateItems()">
       <mat-icon>edit</mat-icon>
@@ -30,10 +33,10 @@
       <mat-icon>delete_forever</mat-icon>
       <span>Delete Selected Rows</span>
     </button>
-      <button mat-raised-button color="primary" (click)="onBtnExport()">
-        <mat-icon>file_download</mat-icon>
-        <span>Download CSV export file</span>
-      </button>
+    <button mat-raised-button color="primary" (click)="onBtnExport()">
+      <mat-icon>file_download</mat-icon>
+      <span>Download CSV export file</span>
+    </button>
 
 
   </div>

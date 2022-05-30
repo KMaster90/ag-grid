@@ -12,6 +12,7 @@ import {Athlete, Car, TableData, TableRow} from "../model/model";
 import * as XLSX from 'xlsx';
 import {ExcelService} from "./services/excel.service";
 import {of} from "rxjs";
+import {FormControl} from "@angular/forms";
 @Component({
   selector: 'app-grid-component',
   templateUrl: './grid.component.html',
@@ -24,7 +25,8 @@ export class GridComponent {
   // For accessing the Grid's API
   @ViewChild(AgGridAngular) agGrid!: AgGridAngular;
   @ViewChild('filterTextBox') filterTextBox!: ElementRef<HTMLInputElement>;
-
+  columnsControl = new FormControl()
+  columnDefsInitial: ColDef[] = [];
   // Data that gets displayed in the grid
   _tableData!: TableData;
   get tableData(){
@@ -34,18 +36,17 @@ export class GridComponent {
     this._tableData=value;
     this.columnDefs=[];
     Object.keys(value.dataType).forEach(x=>this.columnDefs.push({field:x}))
-
+    this.columnsControl.setValue([...this.columnDefs.map(c=>c.field)]);
     this.columnDefs[0] = {...this.columnDefs[0],minWidth: 150, headerCheckboxSelection: true, headerCheckboxSelectionFilteredOnly: true,checkboxSelection:true};
     this.columnDefs.push({
       headerName: this.headerAction,
-      field: 'value',
+      field: this.headerAction,
       cellRenderer: GridClickableButtonComponent,
       colId: 'params',
       editable: false,
       minWidth: 150,
     });
     console.log(this.columnDefs)
-
   }
 
   // Each Column Definition results in one Column.
@@ -62,10 +63,12 @@ export class GridComponent {
 
   constructor(private excelSrv: ExcelService) {
     this.context = { componentParent: this };
+
   }
 
   ngOnInit(){
-
+    this.columnDefsInitial = this.columnDefs;
+    this.columnsControl.valueChanges.subscribe(columnsToShow=>this.columnDefs=this.columnDefsInitial.filter(c=>columnsToShow.indexOf(c.field)>-1));
   }
 
   // Example load data from sever
@@ -159,7 +162,7 @@ export class GridComponent {
         rowData$ : of(importedData.map(arr => {
           const obj:any = {};
           header.forEach((h,i)=>obj[h] = arr[i]);
-          return <Car>obj;
+          return <TableRow>obj;
         }))
       }
 
