@@ -29,6 +29,7 @@ export class GridComponent {
   columnDefsInitial: ColDef[] = [];
   // Data that gets displayed in the grid
   _tableData!: TableData;
+  private isNewImport=false;
   get tableData(){
     return this._tableData;
   }
@@ -45,7 +46,12 @@ export class GridComponent {
       editable: false,
       minWidth: 150,
     });
-    console.log(this.columnDefs)
+    if(this.isNewImport){
+      this.columnDefsInitial = this.columnDefs;
+      this.columnsControl.setValue([...this.columnDefsInitial.map(c=>c.field)]);
+      this.isNewImport =false
+    }
+
   }
 
   // Each Column Definition results in one Column.
@@ -170,7 +176,7 @@ export class GridComponent {
 
     };
     reader.readAsBinaryString(target.files[0]);
-
+    this.isNewImport =true;
   }
 
   ngOnDestroy(){
