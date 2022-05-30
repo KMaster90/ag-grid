@@ -1,7 +1,11 @@
 <!-- Button to clear selection -->
 <div class="example-header justify-between flex items-center">
   <mat-form-field class="example-form-field">
-    <mat-label>Quick Filter</mat-label>
+<!--      <mat-label>Toppings</mat-label>
+      <mat-select [formControl]="columns" multiple>
+        <mat-option *ngFor="let column of columns" [value]="column">{{column}}</mat-option>
+      </mat-select>
+    <mat-label>Quick Filter</mat-label>-->
     <input
       matInput
       type="text"
@@ -10,9 +14,14 @@
       placeholder="Filter..."
       (input)="onFilterTextBoxChanged()"
     />
-
   </mat-form-field>
   <div class="button flex gap-3">
+    <button mat-raised-button color="primary">
+      <label class="flex align-middle">
+      <mat-icon class="self-center">file_upload</mat-icon>
+      <span>Import From File</span>
+      <input hidden type="file" (change)="onImportFile($event)" multiple="false"></label>
+    </button>
     <button mat-raised-button color="primary" (click)="updateItems()">
       <mat-icon>edit</mat-icon>
       <span>Update Selected Rows</span>
@@ -32,7 +41,7 @@
 
 <!-- AG Grid Angular Component -->
 <ag-grid-angular
-  style="width: 100%; height: 90%"
+  style="width: 100%; height: calc(100% - 100rem/16)"
   class="ag-theme-alpine"
   [columnDefs]="columnDefs"
   [defaultColDef]="defaultColDef"

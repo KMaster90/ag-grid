@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import {Component, ElementRef, Input, ViewChild} from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
@@ -9,8 +8,10 @@ import {
   RowNodeTransaction, SelectionChangedEvent
 } from 'ag-grid-community';
 import {GridClickableButtonComponent} from "./grid-clickable-button/grid-clickable-button.component";
-import {TableData} from "../model/model";
-
+import {Athlete, Car, TableData, TableRow} from "../model/model";
+import * as XLSX from 'xlsx';
+import {ExcelService} from "./services/excel.service";
+import {of} from "rxjs";
 @Component({
   selector: 'app-grid-component',
   templateUrl: './grid.component.html',
@@ -19,6 +20,7 @@ import {TableData} from "../model/model";
 export class GridComponent {
   private gridApi!: GridApi;
   context;
+  private headerAction = 'Actions';
   // For accessing the Grid's API
   @ViewChild(AgGridAngular) agGrid!: AgGridAngular;
   @ViewChild('filterTextBox') filterTextBox!: ElementRef<HTMLInputElement>;
@@ -35,7 +37,7 @@ export class GridComponent {
 
     this.columnDefs[0] = {...this.columnDefs[0],minWidth: 150, headerCheckboxSelection: true, headerCheckboxSelectionFilteredOnly: true,checkboxSelection:true};
     this.columnDefs.push({
-      headerName: 'Actions',
+      headerName: this.headerAction,
       field: 'value',
       cellRenderer: GridClickableButtonComponent,
       colId: 'params',
@@ -58,7 +60,7 @@ export class GridComponent {
     filter: true,
   };
 
-  constructor() {
+  constructor(private excelSrv: ExcelService) {
     this.context = { componentParent: this };
   }
 
@@ -80,9 +82,16 @@ export class GridComponent {
     console.log('cellClicked', e);
   }
 
+  //---------------EXPORT---------------------
+
   onBtnExport() {
-    this.gridApi.exportDataAsCsv({onlySelected:!!this.gridApi.getSelectedRows().length});
+    this.gridApi.exportDataAsCsv({
+      columnKeys: this.columnDefs.filter(h=>h.headerName!==this.headerAction).map(h=>h.field||''),
+      onlySelected: !!this.gridApi.getSelectedRows().length,
+    });
   }
+
+  //------------TRANSACTION-------------------
 
   onSelectionChanged($event: SelectionChangedEvent) {
     console.log(this.gridApi.getSelectedRows())
@@ -96,10 +105,8 @@ export class GridComponent {
   }
 
   updateItems() {
-    // update the first 2 items
     const itemsToUpdate: any[] = [];
     this.gridApi.forEachNodeAfterFilterAndSort(function (rowNode, index) {
-      // only do first 2
       if (rowNode.isSelected() === false) {
         return;
       }
@@ -129,4 +136,36 @@ export class GridComponent {
       });
     }
   }
+
+  //-----------------IMPORT------------------
+
+  onImportFile(evt: any) {
+    const target: DataTransfer = <DataTransfer>(evt.target);
+    if (target.files.length !== 1) throw new Error('Cannot use multiple files');
+
+    const reader: FileReader = new FileReader();
+    reader.onload = (e: any) => {
+
+      const bstr: string = e.target.result;
+      const data = <any[]>this.excelSrv.importFromFile(bstr);
+      const header: string[] = Object.values(data[0]);
+      const importedData = data.slice(1);
+
+      let dataType:any = {};
+      header.forEach(h=>dataType[`${h}`]='');
+
+      this.tableData = {
+        dataType,
+        rowData$ : of(importedData.map(arr => {
+          const obj:any = {};
+          header.forEach((h,i)=>obj[h] = arr[i]);
+          return <Car>obj;
+        }))
+      }
+
+    };
+    reader.readAsBinaryString(target.files[0]);
+
+  }
+
 }
