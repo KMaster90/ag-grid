@@ -7,19 +7,33 @@ import {AgGridModule} from "ag-grid-angular";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TabsComponent } from './tabs/tabs.component';
 import {MatTabsModule} from "@angular/material/tabs";
+import { GridClickableButtonComponent } from './grid/grid-clickable-button/grid-clickable-button.component';
+import {MatButtonModule} from "@angular/material/button";
+import {MatIconModule} from "@angular/material/icon";
+import {MatMenuModule} from "@angular/material/menu";
+import {MatInputModule} from "@angular/material/input"
+import {MatSelectModule} from "@angular/material/select";
+import {ReactiveFormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [
     AppComponent,
     GridComponent,
-    TabsComponent
+    TabsComponent,
+    GridClickableButtonComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     AgGridModule,
     BrowserAnimationsModule,
-    MatTabsModule
+    MatTabsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatInputModule,
+    MatSelectModule,
+    ReactiveFormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

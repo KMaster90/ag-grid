@@ -1,41 +1,83 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, ViewChild } from '@angular/core';
-import { CellClickedEvent, ColDef, GridReadyEvent } from 'ag-grid-community';
-import { Observable } from 'rxjs';
-import 'ag-grid-enterprise'
-import {AgGridAngular} from "ag-grid-angular";
-
+import {Component, ElementRef, Input, ViewChild} from '@angular/core';
+import { AgGridAngular } from 'ag-grid-angular';
+import {
+  CellClickedEvent,
+  ColDef,
+  GridApi,
+  GridReadyEvent,
+  RowNodeTransaction, SelectionChangedEvent
+} from 'ag-grid-community';
+import {GridClickableButtonComponent} from "./grid-clickable-button/grid-clickable-button.component";
+import {Athlete, Car, TableData, TableRow} from "../model/model";
+import * as XLSX from 'xlsx';
+import {ExcelService} from "./services/excel.service";
+import {of} from "rxjs";
+import {FormControl} from "@angular/forms";
 @Component({
   selector: 'app-grid-component',
   templateUrl: './grid.component.html',
   styleUrls: ['./grid.component.css']
 })
 export class GridComponent {
+  private gridApi!: GridApi;
+  context;
+  private headerAction = 'Actions';
+  // For accessing the Grid's API
+  @ViewChild(AgGridAngular) agGrid!: AgGridAngular;
+  @ViewChild('filterTextBox') filterTextBox!: ElementRef<HTMLInputElement>;
+  columnsControl = new FormControl()
+  columnDefsInitial: ColDef[] = [];
+  // Data that gets displayed in the grid
+  _tableData!: TableData;
+  get tableData(){
+    return this._tableData;
+  }
+  @Input() set tableData(value: TableData){
+    this._tableData=value;
+    this.columnDefs=[];
+    Object.keys(value.dataType).forEach(x=>this.columnDefs.push({field:x}))
+    this.columnsControl.setValue([...this.columnDefs.map(c=>c.field)]);
+    this.columnDefs[0] = {...this.columnDefs[0],minWidth: 150, headerCheckboxSelection: true, headerCheckboxSelectionFilteredOnly: true,checkboxSelection:true};
+    this.columnDefs.push({
+      headerName: this.headerAction,
+      field: this.headerAction,
+      cellRenderer: GridClickableButtonComponent,
+      colId: 'params',
+      editable: false,
+      minWidth: 150,
+    });
+    console.log(this.columnDefs)
+  }
+
   // Each Column Definition results in one Column.
-  columnDefs: ColDef[] = [
-    { field: 'make'},
-    { field: 'model'},
-    { field: 'price' }
-  ];
+  columnDefs: ColDef[] = [];
 
   // DefaultColDef sets props common to all Columns
   defaultColDef: ColDef = {
+    flex:1,
+    resizable:true,
+    minWidth:100,
     sortable: true,
     filter: true,
   };
 
-  // Data that gets displayed in the grid
-  rowData$!: Observable<any[]>;
+  constructor(private excelSrv: ExcelService) {
+    this.context = { componentParent: this };
 
-  // For accessing the Grid's API
-  @ViewChild(AgGridAngular) agGrid!: AgGridAngular;
+  }
 
-  constructor(private http: HttpClient) {}
+  ngOnInit(){
+    this.columnDefsInitial = this.columnDefs;
+    this.columnsControl.valueChanges.subscribe(columnsToShow=>this.columnDefs=this.columnDefsInitial.filter(c=>columnsToShow.indexOf(c.field)>-1));
+  }
 
   // Example load data from sever
   onGridReady(params: GridReadyEvent) {
-    this.rowData$ = this.http
-      .get<any[]>('https://www.ag-grid.com/example-assets/row-data.json');
+    this.gridApi = params.api;
+  }
+
+  onFilterTextBoxChanged() {
+    this.gridApi.setQuickFilter(this.filterTextBox.nativeElement.value);
   }
 
   // Example of consuming Grid Event
@@ -43,9 +85,90 @@ export class GridComponent {
     console.log('cellClicked', e);
   }
 
-  // Example using Grid's API
+  //---------------EXPORT---------------------
 
-  clearSelection(): void {
-    this.agGrid.api.deselectAll();
+  onBtnExport() {
+    this.gridApi.exportDataAsCsv({
+      columnKeys: this.columnDefs.filter(h=>h.headerName!==this.headerAction).map(h=>h.field||''),
+      onlySelected: !!this.gridApi.getSelectedRows().length,
+    });
   }
+
+  //------------TRANSACTION-------------------
+
+  onSelectionChanged($event: SelectionChangedEvent) {
+    console.log(this.gridApi.getSelectedRows())
+
+  }
+
+  onRemoveSelected() {
+    const selectedData = this.gridApi.getSelectedRows();
+    const res = this.gridApi.applyTransaction({ remove: selectedData })!;
+    this.printResult(res);
+  }
+
+  updateItems() {
+    const itemsToUpdate: any[] = [];
+    this.gridApi.forEachNodeAfterFilterAndSort(function (rowNode, index) {
+      if (rowNode.isSelected() === false) {
+        return;
+      }
+      const data = rowNode.data;
+      data.age = Math.floor(Math.random() * 20000 + 20000);
+      itemsToUpdate.push(data);
+    });
+    const res = this.gridApi.applyTransaction({ update: itemsToUpdate })!;
+    this.printResult(res);
+  }
+
+  printResult(res: RowNodeTransaction) {
+    console.log('---------------------------------------');
+    if (res.add) {
+      res.add.forEach(function (rowNode) {
+        console.log('Added Row Node', rowNode);
+      });
+    }
+    if (res.remove) {
+      res.remove.forEach(function (rowNode) {
+        console.log('Removed Row Node', rowNode);
+      });
+    }
+    if (res.update) {
+      res.update.forEach(function (rowNode) {
+        console.log('Updated Row Node', rowNode);
+      });
+    }
+  }
+
+  //-----------------IMPORT------------------
+
+  onImportFile(evt: any) {
+    const target: DataTransfer = <DataTransfer>(evt.target);
+    if (target.files.length !== 1) throw new Error('Cannot use multiple files');
+
+    const reader: FileReader = new FileReader();
+    reader.onload = (e: any) => {
+
+      const bstr: string = e.target.result;
+      const data = <any[]>this.excelSrv.importFromFile(bstr);
+      const header: string[] = Object.values(data[0]);
+      const importedData = data.slice(1);
+
+      let dataType:any = {};
+      header.forEach(h=>dataType[`${h}`]='');
+
+      this.tableData = {
+        dataType,
+        rowData$ : of(importedData.map(arr => {
+          const obj:any = {};
+          header.forEach((h,i)=>obj[h] = arr[i]);
+          return <TableRow>obj;
+        }))
+      }
+
+    };
+    reader.readAsBinaryString(target.files[0]);
+
+  }
+
 }

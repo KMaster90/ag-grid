@@ -1,0 +1,13 @@
+<button mat-icon-button [matMenuTriggerFor]="menu" (click)="preventSelection($event)" aria-label="Example icon-button with a menu">
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="onRemoveSelected($event)">
+    <mat-icon>delete_forever</mat-icon>
+    <span>Delete Selected Rows</span>
+  </button>
+  <button mat-menu-item (click)="updateItems()">
+    <mat-icon>edit</mat-icon>
+    <span>Update Selected Rows</span>
+  </button>
+</mat-menu>
