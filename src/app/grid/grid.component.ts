@@ -8,10 +8,9 @@ import {
   RowNodeTransaction, SelectionChangedEvent
 } from 'ag-grid-community';
 import {GridClickableButtonComponent} from "./grid-clickable-button/grid-clickable-button.component";
-import {Athlete, Car, TableData, TableRow} from "../model/model";
-import * as XLSX from 'xlsx';
+import {TableData, TableRow} from "../model/model";
 import {ExcelService} from "./services/excel.service";
-import {of} from "rxjs";
+import {of, Subject, takeUntil, tap} from "rxjs";
 import {FormControl} from "@angular/forms";
 @Component({
   selector: 'app-grid-component',
@@ -19,6 +18,7 @@ import {FormControl} from "@angular/forms";
   styleUrls: ['./grid.component.css']
 })
 export class GridComponent {
+  onDestroy$ = new Subject();
   private gridApi!: GridApi;
   context;
   private headerAction = 'Actions';
@@ -36,7 +36,6 @@ export class GridComponent {
     this._tableData=value;
     this.columnDefs=[];
     Object.keys(value.dataType).forEach(x=>this.columnDefs.push({field:x}))
-    this.columnsControl.setValue([...this.columnDefs.map(c=>c.field)]);
     this.columnDefs[0] = {...this.columnDefs[0],minWidth: 150, headerCheckboxSelection: true, headerCheckboxSelectionFilteredOnly: true,checkboxSelection:true};
     this.columnDefs.push({
       headerName: this.headerAction,
@@ -68,8 +67,11 @@ export class GridComponent {
 
   ngOnInit(){
     this.columnDefsInitial = this.columnDefs;
-    this.columnsControl.valueChanges.subscribe(columnsToShow=>this.columnDefs=this.columnDefsInitial.filter(c=>columnsToShow.indexOf(c.field)>-1));
+    this.columnsControl.setValue([...this.columnDefsInitial.map(c=>c.field)]);
+    console.log(this.columnsControl.value)
+    this.columnsControl.valueChanges.pipe(takeUntil(this.onDestroy$), tap(console.log)).subscribe(columnsToShow=>this.columnDefs=this.columnDefsInitial.filter(c=>columnsToShow.indexOf(c.field)>-1));
   }
+
 
   // Example load data from sever
   onGridReady(params: GridReadyEvent) {
@@ -169,6 +171,11 @@ export class GridComponent {
     };
     reader.readAsBinaryString(target.files[0]);
 
+  }
+
+  ngOnDestroy(){
+    this.onDestroy$.next(null);
+    this.onDestroy$.complete();
   }
 
 }
