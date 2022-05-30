@@ -15,10 +15,16 @@ const privatiUrl = 'https://www.ag-grid.com/example-assets/olympic-winners.json'
 export class TabsComponent {
   background: ThemePalette = "primary";
 
-  tableData: TableData = {
+  tableData: TableData[] = [
+    {
     rowData$:this.http.get<Athlete[]>(privatiUrl),
     dataType:new Athlete()
-  };
+    },
+    {
+      rowData$: this.http.get<Car[]>(aziendeURl),
+      dataType: new Car()
+    }
+  ];
 
   tabs= {
     firstTabLabel:'PRIVATI',
@@ -27,21 +33,4 @@ export class TabsComponent {
 
   constructor(public http: HttpClient) {  }
 
-
-  changeData($event: MatTabChangeEvent) {
-    switch($event.tab.textLabel){
-      case this.tabs.firstTabLabel:
-        this.tableData = {
-          rowData$:this.http.get<Athlete[]>(privatiUrl),
-          dataType:new Athlete()
-        };
-        break;
-      case this.tabs.secondTabLabel:
-        this.tableData = {
-          rowData$:this.http.get<Car[]>(aziendeURl),
-          dataType:new Car()
-        };
-        break;
-    }
-  }
 }

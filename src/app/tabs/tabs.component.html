@@ -1,5 +1,5 @@
-<mat-tab-group [backgroundColor]="background" (selectedTabChange)="changeData($event)">
-  <mat-tab [label]="tabs.firstTabLabel"><app-grid-component [tableData]="tableData"></app-grid-component></mat-tab>
-  <mat-tab [label]="tabs.secondTabLabel"> <app-grid-component [tableData]="tableData"></app-grid-component></mat-tab>
+<mat-tab-group [backgroundColor]="background" >
+  <mat-tab [label]="tabs.firstTabLabel"><app-grid-component [tableData]="tableData[0]"></app-grid-component></mat-tab>
+  <mat-tab [label]="tabs.secondTabLabel"> <app-grid-component [tableData]="tableData[1]"></app-grid-component></mat-tab>
 </mat-tab-group>
 
