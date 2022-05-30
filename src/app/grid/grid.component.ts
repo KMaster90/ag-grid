@@ -5,8 +5,9 @@ import {
   ColDef,
   GridApi,
   GridReadyEvent,
-  RowNodeTransaction, SelectionChangedEvent
+  RowNodeTransaction, SelectionChangedEvent, SideBarDef
 } from 'ag-grid-community';
+import 'ag-grid-enterprise';
 import {GridClickableButtonComponent} from "./grid-clickable-button/grid-clickable-button.component";
 import {TableData, TableRow} from "../model/model";
 import {ExcelService} from "./services/excel.service";
@@ -64,6 +65,38 @@ export class GridComponent {
     minWidth:100,
     sortable: true,
     filter: true,
+    // allow every column to be aggregated
+    enableValue: true,
+    // allow every column to be grouped
+    enableRowGroup: true,
+    // allow every column to be pivoted
+    enablePivot: true,
+  };
+
+  sideBar: SideBarDef | string | string[] | boolean | null = {
+    toolPanels: [
+      {
+        id: 'columns',
+        labelDefault: 'Columns',
+        labelKey: 'columns',
+        iconKey: 'columns',
+        toolPanel: 'agColumnsToolPanel',
+        minWidth: 225,
+        width: 225,
+        maxWidth: 225,
+      },
+      {
+        id: 'filters',
+        labelDefault: 'Filters',
+        labelKey: 'filters',
+        iconKey: 'filter',
+        toolPanel: 'agFiltersToolPanel',
+        minWidth: 180,
+        maxWidth: 400,
+        width: 250,
+      },
+    ],
+    position: 'left',
   };
 
   constructor(private excelSrv: ExcelService) {

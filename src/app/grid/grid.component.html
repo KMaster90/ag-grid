@@ -51,6 +51,11 @@
   [rowData]="(tableData?.rowData$) | async"
   [rowSelection]="'multiple'"
   [animateRows]="true"
+  [sideBar]="sideBar"
+  [enableRangeSelection]='true'
+  [enableRangeHandle]="true"
+  [enableFillHandle]="true"
+  [suppressClearOnFillReduction]="true"
   [context]="context"
   (gridReady)="onGridReady($event)"
   (cellClicked)="onCellClicked($event)"
